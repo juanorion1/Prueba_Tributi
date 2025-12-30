@@ -141,3 +141,10 @@ def calc_log(x, base="10"):
             return np.log(x)
         else:
             return 0 
+        
+
+def topk_proba_dict(row, classes_, k=3):
+    idx = np.argsort(row)[::-1][:k]
+    return {int(classes_[i]): float(row[i]) for i in idx}
+
+
