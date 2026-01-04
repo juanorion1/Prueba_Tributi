@@ -25,7 +25,6 @@ La solución cubre:
 .
 ├── data/
 ├── notebooks/
-├── src/             
 ├── README.md
 ├── requirements.txt
 
@@ -35,6 +34,8 @@ La solución cubre:
 ### notebooks/
 - En la carpeta notebooks se encontrará todo el desarrollo realizado según lo pedido en la prueba.
 - Para lograr ejecutar los notebooks, se debe tener la carpeta data creada
+- El orden en el que se deben de ejecutar los notebooks para verificar la prueba, está dado por el número inicial del nombre.
+
 --- 
 
 # Método para validación de explicaciones de LLM (propuesta)
