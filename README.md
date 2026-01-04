@@ -30,6 +30,7 @@ La solución cubre:
 
 ### data/
 - En esta carepta se debe de encontrar el archivo 2024_Property_Tax_Roll.csv
+- En esta carpeta también se encuentran archivos que son producto de ejecuciones de los notebooks.
 
 ### notebooks/
 - En la carpeta notebooks se encontrará todo el desarrollo realizado según lo pedido en la prueba.
