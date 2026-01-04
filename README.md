@@ -23,11 +23,18 @@ La solución cubre:
 ## Estructura del proyecto
 ```text
 .
-├── notebooks/        # Notebooks con el desarrollo paso a paso
+├── data/
+├── notebooks/
 ├── src/             
 ├── README.md
 ├── requirements.txt
 
+### data/
+- En esta carepta se debe de encontrar el archivo 2024_Property_Tax_Roll.csv
+
+### notebooks/
+- En la carpeta notebooks se encontrará todo el desarrollo realizado según lo pedido en la prueba.
+- Para lograr ejecutar los notebooks, se debe tener la carpeta data creada
 --- 
 
 # Método para validación de explicaciones de LLM (propuesta)
