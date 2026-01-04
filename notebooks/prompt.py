@@ -6,8 +6,7 @@ El siguiente descripción técnica muestra las descripciones de las variables en
 - **`nivel_alerta`**: Nivel de alerta pre-asignado por la lógica del sistema. Valores esperados: `"BAJA"`, `"MEDIA"`, `"ALTA"`, `"CRITICA"`.
 
 ### Identificación del usuario
-- **`name`**: Nombre del usuario del registro
-- **`lastname`**: Apellido del usuario del registro
+- **`fullname`**: Nombre del usuario del registro
 - **`address`**: Dirección de residencia del usuario del registro
 ---
 
@@ -18,7 +17,7 @@ El siguiente descripción técnica muestra las descripciones de las variables en
 - **`p_true`**: Probabilidad asignada por el modelo a la **clase registrada**.
 - **`p_pred_max`**: Probabilidad máxima (clase top-1).
 - **`p_margin`**: Diferencia `p_pred_max - p_true`. Indica conflicto entre registro y predicción.
-- **`top_k`**: Top 3 clases con sus probabilidades: `[(clase, prob), ...]`.
+- **`top_k`**: Top 5 clases con sus probabilidades: `[(clase, prob), ...]`.
 
 **Interpretación típica:**
 - `p_true` bajo + `p_margin` alto ⇒ alta probabilidad de inconsistencia (registro no “parece” de esa clase).
@@ -61,7 +60,7 @@ El siguiente descripción técnica muestra las descripciones de las variables en
 """
 
 PROMPT_INSTRUCCIONES = """
-Tu tarea es generar un motivo y una recomendacion apartir de información tributaria, al igual que del resultado
+Tu tarea es generar un motivo y una recomendacion a partir de información tributaria, al igual que del resultado
 de un modelo de clasificación de usuarios, donde se genera un nivel de alerta según la probabilidad de pertenecer
 a uno de los grupos particulares.
 
@@ -82,7 +81,7 @@ El modelo debe basar el `motivo` y la `recomendacion` en:
 - Todo lo que considere útil para formar la explicación que aparezca en la información de la sección **Descripción técnica**
 
 ## Diccionario de información
-- El siguiente diccionario cuenta con el detalle técnico de cada registro de la información tributaria. 
+- El siguiente diccionario(info_tecnica) cuenta con el detalle técnico de cada registro de la información tributaria. 
 - La descripción de cada variable en el diccionario se encontará en la sección **Descripción técnica**
 - info_tecnica = __INFO__TECNICA__
 
@@ -93,8 +92,8 @@ __PROMPT_DETALLE_TECNICO__
 - Para determinar si un valor de probabilidad es alto, o bajo, vas a utilizar los valores entregados en grupos_p_true.
 - Puedes ser imaginativo en tus respuestas, pero DEBES DE BASARTE ÚNICAMENTE en los datos proporcionados
 - Las explicaciones deben de ser entendibles y accionables para analistas, equipo de planeación urbana y directivos.
-  * Por esta razón las razones que se den no pueden ser muy técnicas, pero tampoco muy sencillas.
-- Si consideras necesario, utiliza los nombres y direcciones proporcionadas.
+  * Por este motivo las razones que se den no pueden ser muy técnicas, pero tampoco muy sencillas.
+- Si consideras necesario, utiliza los nombres y direcciones proporcionadas, pero esta información no sería del todo necesaria.
 
 ## Formato de salida
 - Debes de entregar la salida en el siguiente formato json:
@@ -105,7 +104,7 @@ __PROMPT_DETALLE_TECNICO__
         "recomendacion": recomendacion
     }
 
-- No debes de entregar tu análisis, solo lo que se te pide
+- BAJO NINGUNA CIRCUNSTANCIA debes de entregar tu análisis, ÚNICAMENTE VAS A ENTREGAR lo que se te pide
 
 ## Ejemplos
 Los siguientes ejemplos muestran la manera en como se te entregará la información y la manera en como debes entregarla.

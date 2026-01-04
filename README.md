@@ -24,6 +24,32 @@ La solución cubre:
 ```text
 .
 ├── notebooks/        # Notebooks con el desarrollo paso a paso
-├── src/              # Funciones auxiliares (sanitización, validaciones, utilidades)
+├── src/             
 ├── README.md
 ├── requirements.txt
+
+--- 
+
+# Método para validación de explicaciones de LLM (propuesta)
+- Validación de datos en la salida:
+  * Se debe validar id_propiedad, nivel_alerta sea el mismo que en la data original.
+- Se propondrá un método de validación de métricas, donde se necesitará intervención humana si alguna está por debajo
+de un límite pre-establecido.
+- Las métricas a validar serían:
+  * Groundedness: Verificar que no alucine.
+  * Numeric Consistency: Teniendo en cuenta que estamos trabajando con probabilidades, esta métrica serviría para determinar si el modelo está interpretando bien estos resultados.
+  * Rule Compliance: Validación de las reglas explícitas indicadas en el prompt.
+  * Actionability: Determina si la recomendación ayuda a tomar decisiones.
+  * Specificity Score: Determina si una decisión puede ser accionable o no.
+  * Readability: Ayuda a determinar que el texto entregado sea entendible
+  * Schema Validity: Detecta errores sintácticos en el formato
+  * Field Completeness: Detecta si hay campus faltantes
+- Estas métricas las dividiría en 3 secciones y tomaría la mediana entre ellas: 
+  * Coherentes con los datos: Groundedness, Numeric Consistency, Rule Compliance.
+  * Entendibles y accionables: Actionability, Specificity Score, Readability
+  * Formato definido: Schema Validity, Field Completeness
+- Para cada sección de las anteriores, les daría un peso según nivel de importancia. Propondría por ejemplo
+  * peso_coherencia = 0.3
+  * peso_entendible = 0.5
+  * peso_formato = 0.2
+- Definir un threshold a partir del cual un humanmo debería de verificar lo que está sucediendo.

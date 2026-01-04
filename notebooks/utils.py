@@ -12,7 +12,7 @@ resp_vacia = "SIN_DESCRIPCION_TRAS_SANITIZACION"
 nivel_alerta = {"BAJA", "MEDIA", "ALTA", "CRITICA"}
 EMAIL_RE = re.compile(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", re.IGNORECASE)
 
-PHONE_RE = re.compile(r"(\+?\d{1,3}[\s\-\.]?)?(\(?\d{2,4}\)?[\s\-\.]?)?\d{3}[\s\-\.]?\d{4}\b")
+PHONE_RE = re.compile(r"\b(?:\+?\d{1,3}[\s\-\.]?)?(?:\(?\d{3}\)?[\s\-\.]?)\d{3}[\s\-\.]?\d{4}\b")
 
 ADDRESS_RE = re.compile(r"""
 (
@@ -43,15 +43,56 @@ ADDRESS_RE = re.compile(r"""
 )
 """, re.IGNORECASE | re.VERBOSE)
 
-NAME_RE = re.compile(r"\b([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+){1,2})\b")
+ADDRESS_NO_SUFFIX_RE = re.compile(
+    r"\b\d{1,6}\s+[A-ZÁÉÍÓÚÑ][A-Za-zÁÉÍÓÚÑáéíóúñ'\-]{2,}"
+    r"(?:\s+[A-ZÁÉÍÓÚÑ][A-Za-zÁÉÍÓÚÑáéíóúñ'\-]{2,})?\b"
+)
+
+
+UNIT_RE = re.compile(r"\b(?:Unit|Apt|Apartment|Suite|Ste|Piso|Interior|Int)\s*#?\s*\w+\b", re.IGNORECASE)
+
+NAME_RE = re.compile(
+    r"\b"
+    r"[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+"
+    r"(?:\s+[A-Z]\.?)?"                       
+    r"(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+){1,3}"    
+    r"\b"
+)
+
+NAME_TITLE_RE = re.compile(
+    r"\b(?:[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)"
+    r"(?:\s+(?:[A-Z]\.?))?"                 
+    r"(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+){1,2}\b" )
+
+NAME_ALLCAPS_RE = re.compile(
+    r"\b(?:[A-ZÁÉÍÓÚÑ]{2,})(?:\s+[A-ZÁÉÍÓÚÑ]{2,}){1,3}\b"
+)
 
 PUNT_RE = re.compile(r"[,.;:-]\b")
 
 
+
+_PLACEHOLDER_RE = re.compile(
+    r"\[(?:NAME|PHONE|EMAIL|ADDRESS)\]",
+    flags=re.IGNORECASE
+)
+
 def is_effectively_empty(s: str) -> bool:
+
     if s is None:
         return True
-    return re.sub(r"[^A-Za-z0-9ÁÉÍÓÚÑáéíóúñ]+", "", str(s)) == ""
+
+    text = str(s).strip()
+    if text == "":
+        return True
+
+    # 1) Quita placeholders
+    text = _PLACEHOLDER_RE.sub("", text)
+
+    # 2) Quita símbolos, espacios y puntuación (incluye +, comas, etc.)
+    text = re.sub(r"[^A-Za-z0-9ÁÉÍÓÚÑáéíóúñ]+", "", text)
+
+    return text == ""
 
 def cleanup_punctuation(t: str) -> str:
     t = re.sub(r"[,\.\-;:]{2,}", " ", t)
@@ -71,13 +112,17 @@ def sanitizar_texto(texto: str) -> str:
     t = str(texto)
 
     # eliminar patrones claros
-    t = EMAIL_RE.sub("", t)
-    t = PHONE_RE.sub("", t)
-    t = ADDRESS_RE.sub("", t)
+    t = EMAIL_RE.sub("[EMAIL]", t)
+    t = PHONE_RE.sub("[PHONE]", t)
+    t = ADDRESS_NO_SUFFIX_RE.sub("[ADDRESS]",t)
+    t = ADDRESS_RE.sub("[ADDRESS]", t)
+    t = UNIT_RE.sub("[UNIT]", t)
     
 
     # Nombres propios (heurístico)
-    t = NAME_RE.sub("", t)
+    t = NAME_RE.sub("[NAME]", t)
+    t = NAME_TITLE_RE.sub("[NAME]", t)
+    t = NAME_ALLCAPS_RE.sub("[NAME]", t)
 
     # Normalización
     t = re.sub(r"\s+", " ", t).strip()
@@ -143,7 +188,7 @@ def top_n_other(s, n=15):
     return s.where(s.isin(top), "OTROS").fillna("MISSING")
 
 def correlation_ratio_eta(categories, values):
-    """η (correlation ratio) para categórica->numérica, 0..1"""
+    
     mask = (~categories.isna()) & (~values.isna())
     categories = categories[mask]
     values = values[mask].astype(float)
@@ -230,10 +275,10 @@ def topk_proba_dict(row, classes_, k=3):
 
 
 
-def salida_estructurada(request: dict) -> dict:
+def salida_estructurada(request):
     
-    if request["nivel_alerta"] not in nivel_alerta:
-        raise ValueError(f"nivel_alerta inválido: {nivel_alerta}. Debe ser uno de {sorted(nivel_alerta)}")
+    #if request["nivel_alerta"] not in nivel_alerta:
+    #    raise ValueError(f"nivel_alerta inválido: {nivel_alerta}. Debe ser uno de {sorted(nivel_alerta)}")
 
     motivo_s = sanitizar_texto(request["motivo"])
     recomendacion_s = sanitizar_texto(request["recomendacion"])
@@ -274,7 +319,7 @@ def build_evidence_packet(row, df_ref, alerta_info):
     else:
         class_pred_top1 = items_sorted[0][0]
         p_pred_max = items_sorted[0][1]
-        top_k = items_sorted[:3]
+        top_k = items_sorted[:5]
 
     p_margin = (p_pred_max - p_true) if np.isfinite(p_pred_max) else float("nan")
 
@@ -360,12 +405,13 @@ def openai_json_to_dict(text):
     text = text.strip()
 
     return json.loads(text)
-def genera_respuesta(client, dict_info):
+
+def genera_respuesta(client, dict_info, model):
     prompt = PROMPT_INSTRUCCIONES.replace("__INFO__TECNICA__", str(dict_info))
-    prompt = PROMPT_INSTRUCCIONES.replace("__PROMPT_DETALLE_TECNICO__", PROMPT_DETALLE_TECNICO)
-    response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt, config={"temperature": 0.8}).text
+    prompt = prompt.replace("__PROMPT_DETALLE_TECNICO__", PROMPT_DETALLE_TECNICO)
+    response = client.models.generate_content(model=model, contents=prompt, config={"temperature": 0.8}).text
     response = openai_json_to_dict(response)
-    response["motivo"] = salida_estructurada(response["motivo"])
-    response["recomendacion"] = salida_estructurada(response["recomendacion"])
+    response["motivo"] = sanitizar_texto(response["motivo"])
+    response["recomendacion"] = sanitizar_texto(response["recomendacion"])
 
     return response
