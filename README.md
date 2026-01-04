@@ -27,6 +27,7 @@ La solución cubre:
 ├── notebooks/
 ├── README.md
 ├── requirements.txt
+```
 
 ### data/
 - En esta carepta se debe de encontrar el archivo 2024_Property_Tax_Roll.csv
