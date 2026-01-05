@@ -20,6 +20,10 @@ La solución cubre:
 
 ---
 
+## Detalles técnicos
+- El proyecto fue realizado en la versión de python 3.10.19
+- En un ambiente que tenga esta versión de python, se debe instalar el requirements.txt, allí estará contenido todo lo necesario para correr los notebooks
+
 ## Estructura del proyecto
 ```text
 .
