@@ -37,6 +37,7 @@ La solución cubre:
 - En la carpeta notebooks se encontrará todo el desarrollo realizado según lo pedido en la prueba.
 - Para lograr ejecutar los notebooks, se debe tener la carpeta data creada
 - El orden en el que se deben de ejecutar los notebooks para verificar la prueba, está dado por el número inicial del nombre.
+- En el archivo df_respuesta_final.csv se encontrará una muestra de 20 registros aleatorios a los que se les aplicó el prompt realizado, en la columna ´respuesta_llm´ encontrará el resultado.
 
 --- 
 
